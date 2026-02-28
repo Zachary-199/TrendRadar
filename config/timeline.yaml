@@ -428,41 +428,27 @@ custom:
   # 提示：如果 start > end（如 22:00 → 07:00），
   #       系统会自动识别为跨越午夜的时间段。
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  periods:
-
+ periods:
+    # 删掉原来的 weekday_morning、weekend_morning、evening_summary
+    # 只保留 deep_quiet 和新增一个早上推送时间段
+    
     deep_quiet:
       name: "深夜静默"
       start: "23:00"
       end: "06:00"                 # 23:00 → 次日 06:00（跨日时间段）
       collect: true                # 夜间继续采集数据
-      analyze: true                # 夜间可以跑 AI 分析（反正不推送）
+      analyze: true                # 夜间可以跑 AI 分析
       push: false                  # 深夜不推送，避免打扰
 
-    weekday_morning:
-      name: "工作日早间"
-      start: "08:00"
-      end: "10:00"                 # 跨度 2h，留足触发裕量
-      push: true                   # 早上推送一次
-      report_mode: "incremental"   # 只推新增内容
-      # once 继承 default（push: true）→ 窗口内只推一次
-
-    weekend_morning:
-      name: "周末早间"
-      start: "10:00"
-      end: "12:00"                 # 跨度 2h
-      push: true
-      report_mode: "daily"         # 周末看全天汇总
-      # once 继承 default（push: true）→ 窗口内只推一次
-
-    evening_summary:
-      name: "晚间汇总"
-      start: "19:00"
-      end: "21:00"
-      analyze: true                # 晚间做 AI 分析
-      ai_mode: "daily"             # AI 也分析全天内容
-      push: true                   # 晚间推送
-      report_mode: "daily"         # 当日全部新闻汇总
-      # once 继承 default（analyze: true, push: true）→ 只分析/推送一次
+    morning_ai_report:            # 新增：早上AI报告推送
+      name: "AI行业大事记推送"
+      start: "00:25"              # UTC 0:25（北京时间8:25）
+      end: "00:35"                # UTC 0:35（北京时间8:35）
+      push: true                  # 开启推送
+      analyze: true               # 进行AI分析
+      ai_mode: "daily"            # AI分析全天汇总内容
+      report_mode: "daily"        # 推送当日所有新闻的汇总
+      # 继承 default 的 once 设置 → 只推送一次
 
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
@@ -472,27 +458,24 @@ custom:
   # 你可以定义多个日计划（如 workday 和 weekend），
   # 然后在第 3 步的 week_map 中分配给不同的星期。
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  day_plans:
-    workday:                       # 工作日计划
-      periods: ["deep_quiet", "weekday_morning", "evening_summary"]
-    weekend:                       # 周末计划（用 weekend_morning 替换 weekday_morning）
-      periods: ["deep_quiet", "weekend_morning", "evening_summary"]
-
+ day_plans:
+    daily_ai_report:               # 新的日计划名称
+      periods: ["deep_quiet", "morning_ai_report"]
+    # 删掉原来的 workday 和 weekend
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # 第 3 步：指定每天用哪个日计划
   #
   # 1=周一  2=周二  3=周三  4=周四  5=周五  6=周六  7=周日
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
-  week_map:
-    1: "workday"                   # 周一 → 工作日计划
-    2: "workday"                   # 周二
-    3: "workday"                   # 周三
-    4: "workday"                   # 周四
-    5: "workday"                   # 周五
-    6: "weekend"                   # 周六 → 周末计划
-    7: "weekend"                   # 周日
-
+ week_map:
+    1: "daily_ai_report"           # 周一 → 每日AI报告计划
+    2: "daily_ai_report"           # 周二
+    3: "daily_ai_report"           # 周三
+    4: "daily_ai_report"           # 周四
+    5: "daily_ai_report"           # 周五
+    6: "daily_ai_report"           # 周六 → 同样执行
+    7: "daily_ai_report"           # 周日 → 同样执行
 
   # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
   # 冲突策略（一般不用改）
